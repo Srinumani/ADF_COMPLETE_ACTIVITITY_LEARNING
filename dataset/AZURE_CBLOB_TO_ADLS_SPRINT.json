@@ -1,0 +1,27 @@
+{
+	"name": "AZURE_CBLOB_TO_ADLS_SPRINT",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "output"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "PAR1\u0015\u0000\u0015$\u0015(\u0015����\t\u001c\u0015\u0006\u0015\u0000\u0015\u0006\u0015\b\u0000\u0000\u0012D\u0002\u0000\u0000\u0000\u0003\u0007\u0001\u0000\u0000\u0000\u0002\u0000\u0000\u0000\u0003\u0000\u0000\u0000\u0015\u0000\u0015@\u0015D\u0015�ω�",
+				"type": "String"
+			}
+		]
+	}
+}
