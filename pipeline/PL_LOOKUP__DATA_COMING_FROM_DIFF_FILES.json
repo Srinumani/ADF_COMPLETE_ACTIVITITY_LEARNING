@@ -1,0 +1,617 @@
+{
+	"name": "PL_LOOKUP__DATA_COMING_FROM_DIFF_FILES",
+	"properties": {
+		"activities": [
+			{
+				"name": "DIFF_FILES_LOOKUP_PL",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DIFF_FILES_INTO_ADLS",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "DIFF_FILES_LOOKUP_PL",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('DIFF_FILES_LOOKUP_PL').output.value",
+						"type": "Expression"
+					},
+					"batchCount": 2,
+					"activities": [
+						{
+							"name": "Switch1",
+							"type": "Switch",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"on": {
+									"value": "@item().SourceType",
+									"type": "Expression"
+								},
+								"cases": [
+									{
+										"value": "CSV",
+										"activities": [
+											{
+												"name": "CSV_COPY_DATA",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "DelimitedTextSource",
+														"storeSettings": {
+															"type": "AzureBlobStorageReadSettings",
+															"recursive": true,
+															"enablePartitionDiscovery": false
+														},
+														"formatSettings": {
+															"type": "DelimitedTextReadSettings"
+														}
+													},
+													"sink": {
+														"type": "ParquetSink",
+														"storeSettings": {
+															"type": "AzureBlobStorageWriteSettings"
+														},
+														"formatSettings": {
+															"type": "ParquetWriteSettings"
+														}
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"mappings": [
+															{
+																"source": {
+																	"name": "EmpID",
+																	"type": "String",
+																	"physicalType": "String"
+																},
+																"sink": {
+																	"name": "EmpID",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																}
+															},
+															{
+																"source": {
+																	"name": "EmpName",
+																	"type": "String",
+																	"physicalType": "String"
+																},
+																"sink": {
+																	"name": "EmpName",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																}
+															},
+															{
+																"source": {
+																	"name": "Department",
+																	"type": "String",
+																	"physicalType": "String"
+																},
+																"sink": {
+																	"name": "Department",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																}
+															},
+															{
+																"source": {
+																	"name": "Salary",
+																	"type": "String",
+																	"physicalType": "String"
+																},
+																"sink": {
+																	"name": "Salary",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																}
+															}
+														],
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "AZURE_BLOB_CSV_IN_SWITCH",
+														"type": "DatasetReference",
+														"parameters": {
+															"SourceFolder": {
+																"value": "@item().SourceFolder",
+																"type": "Expression"
+															},
+															"FileName": {
+																"value": "@item().FileName",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "AZURE_BLOB_CSV_FILES_IN_SWITCH_OUTPUT",
+														"type": "DatasetReference",
+														"parameters": {
+															"SinkFolder": {
+																"value": "@item().SinkFolder",
+																"type": "Expression"
+															},
+															"FileName": {
+																"value": "@replace(item().FileName,'.csv','.parquet')",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											}
+										]
+									},
+									{
+										"value": "TXT",
+										"activities": [
+											{
+												"name": "TXT_COPY_DATA",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "DelimitedTextSource",
+														"storeSettings": {
+															"type": "AzureBlobStorageReadSettings",
+															"recursive": true,
+															"enablePartitionDiscovery": false
+														},
+														"formatSettings": {
+															"type": "DelimitedTextReadSettings"
+														}
+													},
+													"sink": {
+														"type": "ParquetSink",
+														"storeSettings": {
+															"type": "AzureBlobStorageWriteSettings"
+														},
+														"formatSettings": {
+															"type": "ParquetWriteSettings"
+														}
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"mappings": [
+															{
+																"source": {
+																	"name": "OrderID|CustomerID|Product|Amount",
+																	"type": "String",
+																	"physicalType": "String"
+																},
+																"sink": {
+																	"name": "OrderID|CustomerID|Product|Amount",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																}
+															}
+														],
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "AZURE_BLOB_TXT_SWITCH_INPUT",
+														"type": "DatasetReference",
+														"parameters": {
+															"SourceFolder": {
+																"value": "@item().SourceFolder",
+																"type": "Expression"
+															},
+															"FileName": {
+																"value": "@item().FileName",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "AZURE_BLOB_TXT_SWITCH_OUTPUT",
+														"type": "DatasetReference",
+														"parameters": {
+															"SinkFolder": {
+																"value": "@item().SinkFolder",
+																"type": "Expression"
+															},
+															"FileName": {
+																"value": "@replace(item().FileName,'.txt','.parquet')",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											}
+										]
+									},
+									{
+										"value": "EXCEL",
+										"activities": [
+											{
+												"name": "COPY_DATA_EXCEL",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "ExcelSource",
+														"storeSettings": {
+															"type": "AzureBlobStorageReadSettings",
+															"recursive": true,
+															"enablePartitionDiscovery": false
+														}
+													},
+													"sink": {
+														"type": "ParquetSink",
+														"storeSettings": {
+															"type": "AzureBlobStorageWriteSettings"
+														},
+														"formatSettings": {
+															"type": "ParquetWriteSettings"
+														}
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"mappings": [
+															{
+																"source": {
+																	"type": "String",
+																	"ordinal": 1
+																},
+																"sink": {
+																	"name": "Column1",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																}
+															},
+															{
+																"source": {
+																	"type": "String",
+																	"ordinal": 2
+																},
+																"sink": {
+																	"name": "Column2",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																}
+															},
+															{
+																"source": {
+																	"type": "String",
+																	"ordinal": 3
+																},
+																"sink": {
+																	"name": "Column3",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																}
+															},
+															{
+																"source": {
+																	"type": "String",
+																	"ordinal": 4
+																},
+																"sink": {
+																	"name": "Column4",
+																	"type": "String",
+																	"physicalType": "UTF8"
+																}
+															}
+														],
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "AZURE_BLOB_EXCEL_SWITCH_INPUT",
+														"type": "DatasetReference",
+														"parameters": {
+															"SourceFolder": {
+																"value": "@item().SourceFolder",
+																"type": "Expression"
+															},
+															"FileName": {
+																"value": "@item().FileName",
+																"type": "Expression"
+															},
+															"SheetName": {
+																"value": "@item().SheetName",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "AZURE_BLOB_EXCEL_SWITCH_OUTPUT",
+														"type": "DatasetReference",
+														"parameters": {
+															"SinkFolder": {
+																"value": "@item().SinkFolder",
+																"type": "Expression"
+															},
+															"FileName": {
+																"value": "@replace(item().FileName,'.xlsx','.parquet')",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											}
+										]
+									},
+									{
+										"value": "REST",
+										"activities": [
+											{
+												"name": "COPY_REST_DATA",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "RestSource",
+														"httpRequestTimeout": "00:01:40",
+														"requestInterval": "00.00:00:00.010",
+														"requestMethod": "GET",
+														"paginationRules": {
+															"supportRFC5988": "true"
+														}
+													},
+													"sink": {
+														"type": "ParquetSink",
+														"storeSettings": {
+															"type": "AzureBlobStorageWriteSettings"
+														},
+														"formatSettings": {
+															"type": "ParquetWriteSettings"
+														}
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"mappings": [
+															{
+																"source": {
+																	"path": "$['id']"
+																},
+																"sink": {
+																	"name": "id"
+																}
+															},
+															{
+																"source": {
+																	"path": "$['name']"
+																},
+																"sink": {
+																	"name": "name"
+																}
+															},
+															{
+																"source": {
+																	"path": "$['username']"
+																},
+																"sink": {
+																	"name": "username"
+																}
+															},
+															{
+																"source": {
+																	"path": "$['email']"
+																},
+																"sink": {
+																	"name": "email"
+																}
+															},
+															{
+																"source": {
+																	"path": "$['address']['street']"
+																},
+																"sink": {
+																	"name": "street"
+																}
+															},
+															{
+																"source": {
+																	"path": "$['address']['suite']"
+																},
+																"sink": {
+																	"name": "suite"
+																}
+															},
+															{
+																"source": {
+																	"path": "$['address']['city']"
+																},
+																"sink": {
+																	"name": "city"
+																}
+															},
+															{
+																"source": {
+																	"path": "$['address']['zipcode']"
+																},
+																"sink": {
+																	"name": "zipcode"
+																}
+															},
+															{
+																"source": {
+																	"path": "$['address']['geo']['lat']"
+																},
+																"sink": {
+																	"name": "lat"
+																}
+															},
+															{
+																"source": {
+																	"path": "$['address']['geo']['lng']"
+																},
+																"sink": {
+																	"name": "lng"
+																}
+															},
+															{
+																"source": {
+																	"path": "$['phone']"
+																},
+																"sink": {
+																	"name": "phone"
+																}
+															},
+															{
+																"source": {
+																	"path": "$['website']"
+																},
+																"sink": {
+																	"name": "website"
+																}
+															},
+															{
+																"source": {
+																	"path": "$['company']['name']"
+																},
+																"sink": {
+																	"name": "company_name"
+																}
+															},
+															{
+																"source": {
+																	"path": "$['company']['catchPhrase']"
+																},
+																"sink": {
+																	"name": "catchPhrase"
+																}
+															},
+															{
+																"source": {
+																	"path": "$['company']['bs']"
+																},
+																"sink": {
+																	"name": "bs"
+																}
+															}
+														]
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "REST_API_SWITCH",
+														"type": "DatasetReference",
+														"parameters": {
+															"RelativeUrl": {
+																"value": "@item().FileName",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "AZURE_BLOB_REST_SWITCH_OUTPUT",
+														"type": "DatasetReference",
+														"parameters": {
+															"SinkFolder": {
+																"value": "@item().SinkFolder",
+																"type": "Expression"
+															},
+															"FileName": {
+																"value": "@concat(item().FileName,'.parquet')",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-07-10T12:02:06Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

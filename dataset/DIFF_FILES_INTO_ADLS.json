@@ -1,0 +1,47 @@
+{
+	"name": "DIFF_FILES_INTO_ADLS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "FileID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "FileName",
+				"type": "varchar"
+			},
+			{
+				"name": "SourceType",
+				"type": "varchar"
+			},
+			{
+				"name": "SourceFolder",
+				"type": "varchar"
+			},
+			{
+				"name": "SinkFolder",
+				"type": "varchar"
+			},
+			{
+				"name": "OutputFormat",
+				"type": "varchar"
+			},
+			{
+				"name": "IsActive",
+				"type": "bit"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "FileMetadata"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
