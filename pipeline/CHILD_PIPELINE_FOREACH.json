@@ -232,7 +232,10 @@
 												"referenceName": "DS_Retail_Raw",
 												"type": "DatasetReference",
 												"parameters": {
-													"FolderName": "raw",
+													"FolderName": {
+														"value": "@concat('raw/',formatDateTime(utcNow(),'yyyy'),'/',formatDateTime(utcNow(),'MM'),'/',formatDateTime(utcNow(),'dd'))",
+														"type": "Expression"
+													},
 													"FileName": {
 														"value": "@item().name",
 														"type": "Expression"
@@ -310,7 +313,10 @@
 												"referenceName": "DS_Retail_Raw",
 												"type": "DatasetReference",
 												"parameters": {
-													"FolderName": "archive",
+													"FolderName": {
+														"value": "@concat('archive/',formatDateTime(utcNow(),'yyyy'),'/',formatDateTime(utcNow(),'MM'),'/',formatDateTime(utcNow(),'dd'))",
+														"type": "Expression"
+													},
 													"FileName": {
 														"value": "@item().name",
 														"type": "Expression"
